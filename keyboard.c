@@ -1,15 +1,16 @@
-#include <sys/types.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ncurses.h>    
+#include <time.h>
 #include <unistd.h>
-#include <ncurses.h>
-#include <simpl.h>
+#include "simpl.h"
 #include "message.h"
 
 int admin;
 int end = 0;
 MESSAGE msg, reply;
-
+ 
 void error_msg(void);
 void registration(void);
 void play_game(void);
@@ -21,15 +22,17 @@ int main(void)
     cbreak();
     nonl();
     noecho();
-    nodelay(stdscr, TRUE);
-    keypad(stdscr, TRUE);
+    nodelay(stdscr,TRUE);
+    keypad(stdscr,TRUE);
 
     if (name_attach("Keyboard", NULL) == -1) {
         fprintf(stderr, "Cannot attach name!\n");
         exit(0);
     }
-    if ((admin = name_locate("Input_Admin") == -1))  error_msg();
+    if ((admin = name_locate("Input_Admin")) == -1)  error_msg();
+
     registration();
+
     play_game();
 
     if(name_detach() == -1){
@@ -56,8 +59,8 @@ void play_game(void){
         exit(0);
     }
 
-    msg.type = KEYBOARD_INPUT;
     while (!end){
+        msg.type = KEYBOARD_INPUT;
         msg.key = getch();
         if (msg.key != -1){
             ksend();
@@ -70,6 +73,7 @@ void play_game(void){
                 break;
             default:    break;
         }
+        // TODO, send message to input_admin, guarantee to end the program
     }
     endwin();
 }
