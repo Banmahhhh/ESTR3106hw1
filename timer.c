@@ -6,6 +6,7 @@
 #include <time.h>
 #include "message.h"
 
+//laji
 int game_admin;
 MESSAGE msg, reply;
 TIMER_TYPE timer_type;
@@ -35,8 +36,7 @@ int main(int argc, char* argv[])
     if (name_detach() == -1){
         fprintf(stderr, "Cannot detach name!\n");
         exit(0);
-    }
-    
+    }  
     return 0;
 }
 

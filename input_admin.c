@@ -4,14 +4,15 @@
 #include <simpl.h>
 #include <ncurses.h>
 #include "message.h"
+#include <time.h>
 
 typedef struct node{
-    ACTION act;
-    int humanId;
+    ACTION act;     
+    int humanId; 
     struct node* next;
 } queue;
 
-queue *head, *tail;
+queue *head = NULL, *tail = NULL;
 char *fromWhom = NULL, *fromWhom2 = NULL;
 MESSAGE msg, reply, msg2, reply2;
 int end = 0;
@@ -25,8 +26,11 @@ void error_msg(void);
 void push(int);
 void pop(void);
 void isend(void);
+FILE* banma;
 
 int main(void){ 
+    banma = fopen("banma", "w");
+
     if (name_attach("Input_Admin", NULL) == -1){
         fprintf(stderr, "Attach name failed!\n");
         exit(0);
@@ -36,12 +40,15 @@ int main(void){
         fprintf(stderr, "Detach name failed\n");
         exit(0);
     }
+    fclose(banma);
     return 0;
 }
 
 void play_game(void){
     while(!end){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1) error_msg();
+        fprintf(banma, "receive message %d\n", msg.type);
+        fflush(banma);  
         switch (msg.type){
             case REGISTER_COURIER:
                 if (courier_num == 2){
@@ -66,16 +73,19 @@ void play_game(void){
             case FAIL:
                 break;
             case START:
+                fprintf(banma, "receive start\n");
+                fflush(banma);
                 reply.type = HUMAN_MOVE;
                 reply.act = NOACTION;
-                reply.humanId = reply.humanId;
-                isend();
+                // reply.humanId = 0;
+                isend(); 
                 break;
             case UPDATE:
-                reply.type = HUMAN_MOVE;
-                reply.humanId = head->humanId;  
-                reply.act = head->act;
-                pop();           
+                fprintf(banma, "receive update\n");
+                fflush(banma);
+                reply.type = HUMAN_MOVE;                 
+                pop();  
+                isend(); 
                 break;
             case END:
                 reply.type = OKAY;
@@ -94,7 +104,7 @@ void play_game(void){
                     isend();
                 }
                 break;
-            case KEYBOARD_READY:
+            case KEYBOARD_READY: 
                 reply.type = START;
                 isend();
                 break;
@@ -109,44 +119,51 @@ void play_game(void){
     }
 }
 
-// check if the action valid. if yes, return, if no, wait for message
-void pop(){
+// check if the action valid. if yes, return, if no, wait for message from keyboard
+void pop(){  
     while (head == NULL){
-        if(Receive(&fromWhom2, &msg2, sizeof(MESSAGE)) == -1){
-            error_msg();
-        }
-        if (msg2.type == KEYBOARD_INPUT){
+        if(Receive(&fromWhom2, &msg2, sizeof(msg2)) == -1) error_msg();        
+        if (msg2.type == KEYBOARD_INPUT){                                           
             push(msg2.key);
             reply2.type = OKAY;
             if (Reply(fromWhom2, &reply2, sizeof(MESSAGE)) == -1)
                 exit(0);
         }        
     }    
+
+    fprintf(banma, "head is not null now\n");
+    fflush(banma);
+    reply.humanId = head->humanId;  
+    reply.act = head->act;
+    fprintf(banma, "head act %d\n", head->act);
+    fflush(banma);
+    queue* tmp = head;
     head = head->next;
+    free(tmp);
 }
 
 // change tmp_key to action
 void push(int tmp_key){
     ACTION action;
-    FORCE humanID;
+    int humanId;
     switch (tmp_key)
     {
-        case 259: action = MOVENORTH; humanId = BLUE; break;
-        case 258: action = MOVESOUTH; humanId = BLUE; break;
-        case 260: action = MOVEWEST; humanId = BLUE; break;
-        case 261: action = MOVEEAST; humanId = BLUE; break;
-        case 106: action = PLACELANCER; humanId = BLUE; break;
-        case 107: action = PLACEHOPLITE; humanId = BLUE; break;
-        case 117: action = PLACEMINE; humanId = BLUE; break;
-        case 105: action = PLACEWALL; humanId = BLUE; break;
-        case 119: action = MOVENORTH; humanId = RED; break;
-        case 115: action = MOVESOUTH; humanId = RED; break;
-        case 97: action = MOVEWEST; humanId = RED; break;
-        case 100: action = MOVEEAST; humanId = RED; break;
-        case 102: action = PLACELANCER; humanId = RED; break;
-        case 103: action = PLACEHOPLITE; humanId = RED; break;
-        case 114: action = PLACEMINE; humanId = RED; break;
-        case 116: action = PLACEWALL; humanId = BLUE; break;
+        case 259: action = MOVENORTH; humanId = 1; break;
+        case 258: action = MOVESOUTH; humanId = 1; break;
+        case 260: action = MOVEWEST; humanId = 1; break;
+        case 261: action = MOVEEAST; humanId = 1; break;
+        case 106: action = PLACELANCER; humanId = 1; break;
+        case 107: action = PLACEHOPLITE; humanId = 1; break;
+        case 117: action = PLACEMINE; humanId = 1; break;
+        case 105: action = PLACEWALL; humanId = 1; break;
+        case 119: action = MOVENORTH; humanId = 0; break;
+        case 115: action = MOVESOUTH; humanId = 0; break;
+        case 97: action = MOVEWEST; humanId = 0; break;
+        case 100: action = MOVEEAST; humanId = 0; break;
+        case 102: action = PLACELANCER; humanId = 0; break;
+        case 103: action = PLACEHOPLITE; humanId = 0; break;
+        case 114: action = PLACEMINE; humanId = 0; break;
+        case 116: action = PLACEWALL; humanId = 0; break;
         default: break;
     }
 
@@ -155,15 +172,17 @@ void push(int tmp_key){
         tail = head;
         head->next = NULL;
         head->act = action;
-        head->humanId = humanID;
+        head->humanId = humanId;
     }
     else{
         tail->next = (queue*)malloc(sizeof(queue));
         tail->next->act = action;
-        tail->next->humanId = humanID;
+        tail->next->humanId = humanId;
         tail = tail->next;
         tail->next = NULL;
     }
+    // fprintf(banma, "after push, tail->act is %d\n", tail->act);
+    // fflush(banma); 
 }
 
 void isend(void){
