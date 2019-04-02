@@ -22,9 +22,11 @@ void psend(void);
 void push_msg(ARENA);
 void pop_msg(void);
 void error_msg(void);
+FILE* display_file;
 
 int main(void)
 {
+    display_file = fopen("display_file", "w");
     char name[] = "Display_Admin";
     if (name_attach(name, NULL) == -1){
         fprintf(stderr, "Cannot attach name!\n");
@@ -36,6 +38,7 @@ int main(void)
         fprintf(stderr, "Cannot, detach name!\n");
         exit(0);
     }
+    fclose(display_file);
     return 0;
 }
 
@@ -44,6 +47,8 @@ void display_game(void){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)    error_msg();
         switch (msg.type){
             case DISPLAY_ARENA:
+                fprintf(display_file, "receive display_arena\n");
+                fflush(display_file);
                 reply.type = OKAY;
                 psend();
                 push_msg(msg.arena);
