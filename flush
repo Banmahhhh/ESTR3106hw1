@@ -1,0 +1,4 @@
+rm -rf ~/fifo/*
+killall -q -9 input_admin keyboard game_admin display_admin courier timer painter 
+killall surrogateTcp
+killall protocolRouter

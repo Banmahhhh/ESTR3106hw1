@@ -14,7 +14,7 @@ typedef struct node{
 
 queue *head = NULL, *tail = NULL;
 char *fromWhom = NULL, *fromWhom2 = NULL;
-char *cour1 = NULL, *cour2 = NULL;
+char *couriers[2];
 MESSAGE msg, reply, msg2, reply2;
 int end = 0;
 int end_num = 0;
@@ -27,9 +27,12 @@ void error_msg(void);
 void push(int);
 void pop(void);
 void isend(void);
+void check_and_reply(void);
 FILE* banma;
 
 int main(void){ 
+    couriers[0] = NULL;
+    couriers[1] = NULL;
     banma = fopen("input_file", "w"); 
     if (name_attach("Input_Admin", NULL) == -1){
         fprintf(stderr, "Attach name failed!\n");
@@ -47,8 +50,8 @@ int main(void){
 void play_game(void){
     while(!end){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1) error_msg(); 
-        fprintf(banma, "input_admin receives message %d\n", msg.type);
-        fflush(banma);
+        // fprintf(banma, "input_admin receives message %d\n", msg.type);
+        // fflush(banma);
         switch (msg.type){
             case REGISTER_COURIER:
                 if (courier_num == 2){
@@ -75,15 +78,15 @@ void play_game(void){
             case START:
                 reply.type = HUMAN_MOVE;
                 reply.act = NOACTION;
+                reply.humanId = msg.humanId;
                 // reply.humanId = 0;
                 isend(); 
                 break;
             case UPDATE:
-                reply.type = HUMAN_MOVE;                 
-                pop();  
-                // fprintf(banma, "fromwhom %s\n", fromWhom);
+                // fprintf(banma, "receives update from %s %d\n", fromWhom, msg.humanId);
                 // fflush(banma);
-                isend(); 
+                couriers[msg.humanId] = fromWhom; 
+                check_and_reply();   
                 break;
             case END:
                 reply.type = OKAY;
@@ -112,28 +115,24 @@ void play_game(void){
                 push(msg.key);
                 isend();                   
                 break;
-            default:
-                break;
+            default: break;
         }
     }
 }
 
 // check if the action valid. if yes, return, if no, wait for message from keyboard
-void pop(){  
-    while (head == NULL){
-        if(Receive(&fromWhom2, &msg2, sizeof(msg2)) == -1) error_msg();        
-        if (msg2.type == KEYBOARD_INPUT){                                           
-            push(msg2.key);
-            reply2.type = OKAY;
-            if (Reply(fromWhom2, &reply2, sizeof(MESSAGE)) == -1)
-                exit(0);
-        }        
-    }    
-    reply.humanId = head->humanId;  
-    reply.act = head->act;
-    queue* tmp = head;
-    head = head->next;
-    free(tmp);
+void pop(){     // update reply and pop
+    // while (head == NULL){
+    //     if(Receive(&fromWhom2, &msg2, sizeof(msg2)) == -1) error_msg();        
+    //     if (msg2.type == KEYBOARD_INPUT){                                           
+    //         push(msg2.key);
+    //         reply2.type = OKAY;
+    //         if (Reply(fromWhom2, &reply2, sizeof(MESSAGE)) == -1)
+    //             exit(0);
+    //     }        
+    // }    
+    // if (head == NULL)   return;
+    queue* tmp = head; head = head->next; free(tmp);  
 }
 
 // change tmp_key to action
@@ -175,11 +174,37 @@ void push(int tmp_key){
         tail = tail->next;
         tail->next = NULL;
     }
+    // fprintf(banma, "finish push %d\n", tail->act);
+    // fflush(banma);
+    check_and_reply();
+}
+
+void check_and_reply(void){
+    if (head != NULL && couriers[head->humanId] != NULL){
+        // fprintf(banma, "1. reply %d act is %d\n", head->humanId, head->act);
+        // fflush(banma);
+        reply.type = HUMAN_MOVE;
+        reply.humanId = head->humanId;  
+        reply.act = head->act;
+        if (Reply(couriers[head->humanId], &reply, sizeof(MESSAGE)) == -1) error_msg();
+        couriers[head->humanId] = NULL;
+        pop();
+    }
+    if (head != NULL && couriers[head->humanId] != NULL){
+        // fprintf(banma, "2. reply %d\n", head->humanId);
+        // fflush(banma);
+        reply.type = HUMAN_MOVE;
+        reply.humanId = head->humanId;  
+        reply.act = head->act;
+        if (Reply(couriers[head->humanId], &reply, sizeof(MESSAGE)) == -1) error_msg();
+        couriers[head->humanId] = NULL;
+        pop();
+    }
 }
 
 void isend(void){
     if (Reply(fromWhom, &reply, sizeof(MESSAGE)) == -1)
-        exit(0);
+        error_msg();
 }
 
 void error_msg(void){

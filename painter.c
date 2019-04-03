@@ -114,7 +114,7 @@ void paint(void){
                     break;
                 case MINE:
                     if(reply.arena.units[i].force == RED){
-                        paint_red(reply.arena.units[i].pos.y, reply.arena.units[i].pos.x, "/O\\", reply.arena.units[i].highlight);
+                        paint_red(reply.arena.units[i].pos.y, reply.arena.units[i].pos.x-1, "/O\\", reply.arena.units[i].highlight);
                     }
                     else{
                         paint_blue(reply.arena.units[i].pos.y, reply.arena.units[i].pos.x-1, "/O\\", reply.arena.units[i].highlight);
@@ -125,7 +125,7 @@ void paint(void){
                         paint_red(reply.arena.units[i].pos.y, reply.arena.units[i].pos.x, "{", reply.arena.units[i].highlight);
                     }
                     else{
-                        paint_blue(reply.arena.units[i].pos.y, reply.arena.units[i].pos.x-1, "}", reply.arena.units[i].highlight);
+                        paint_blue(reply.arena.units[i].pos.y, reply.arena.units[i].pos.x, "}", reply.arena.units[i].highlight);
                     }
                     break;
                 default:    break;
