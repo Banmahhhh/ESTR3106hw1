@@ -134,7 +134,9 @@ void registration(void){
     if(Reply(courier2, &reply, sizeof(MESSAGE)) == -1)   error_msg();
 
     reply.type = START; 
+    reply.humanId = 0;
     if(Reply(human[0], &reply, sizeof(MESSAGE)) == -1)   error_msg();
+    reply.humanId = 1;
     if(Reply(human[1], &reply, sizeof(MESSAGE)) == -1)   error_msg();
 }
 
@@ -178,7 +180,8 @@ void play_game(void){
                 // fprintf(zebra, "receive human move, id is %d\n", humanId);
                 // fflush(zebra);
                 ACTION act = msg.act;
-                reply.type = UPDATE;   
+                reply.type = UPDATE; 
+                reply.humanId = msg.humanId;  
                 g_send();
 
                 int x = arena.players[humanId].pos.x;     // not from (0,0)

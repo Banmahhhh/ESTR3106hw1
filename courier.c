@@ -26,6 +26,8 @@ int main(int argc, char* argv[])
 
     if (courid == 0) cour = fopen("cour0", "w+");
     else cour = fopen("cour1", "w+");
+
+
     if (name_attach(name, NULL) == -1){
         fprintf(stderr, "Cannot attach name!\n");
         exit(0);
@@ -92,9 +94,9 @@ void play_game(void){
     msg.humanId = reply.humanId;
     csend(in_admin);
     while(!end){
+        fprintf(cour, "courier %d receive message %d\n", courid, reply.type);
+        fflush(cour);
         switch (reply.type){
-            fprintf(cour, "courier %d receive message\n", courid);
-            fflush(cour);
             case HUMAN_MOVE:
                 msg.type = HUMAN_MOVE;
                 msg.humanId = reply.humanId;
