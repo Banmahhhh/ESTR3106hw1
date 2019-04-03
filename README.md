@@ -1,2 +1,7 @@
 # ESTR3106hw1
-fuck 3106
+##How to run
+./flush
+make
+./run.sh
+(repeat)
+// no end game management
