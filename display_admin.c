@@ -4,6 +4,7 @@
 #include <simpl.h>
 #include "message.h"
 
+
 typedef struct input
 {
     MESSAGE reply;
@@ -63,6 +64,8 @@ void display_game(void){
                 push_msg(msg.arena);
                 reply.type = OKAY;
                 psend();
+                if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)    error_msg();
+                // receive okay from painter, end
                 break;
             default: break;
         }

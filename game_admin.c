@@ -7,6 +7,7 @@
 #include "message.h"
 #include <string.h>
 
+
 typedef struct input{
     MESSAGE reply;
     struct input* next;
@@ -47,7 +48,7 @@ int main(void){
         fprintf(stderr, "Attach name failed!\n");
         exit(0);
     }
-    init();
+    init();  
     registration();
     fprintf(zebra, "registration finish\n");
     fflush(zebra);
@@ -67,8 +68,8 @@ void registration(void){
 
     while(timer_num != 3 || courier_num != 1 || human_num != 2){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)    error_msg();
-        // fprintf(zebra, "registration receive message, receive message %d\n", msg.type);
-        // fflush(zebra);
+        fprintf(zebra, "registration receive message, receive message %s, %d\n", fromWhom, msg.type);
+        fflush(zebra);
         ;
         switch (msg.type){
             case REGISTER_TIMER:
@@ -98,8 +99,9 @@ void registration(void){
                 }
                 else{
                     reply.type = INIT;
-                    reply.humanId = human_num;
-                    
+                    reply.humanId = fromWhom[7]-'0'; //human_tmp++;
+                    fprintf(zebra, "human id is %d\n", reply.humanId);
+                    fflush(zebra);
                     g_send();
                 }
                 break;
@@ -137,15 +139,13 @@ void registration(void){
 }
 
 void play_game(void){
-    push();     // push the initial arena into list
+    push();  
     while(arena.players[0].health > 0 && arena.players[1].health > 0){
         if (Receive(&fromWhom, &msg, sizeof(MESSAGE)) == -1)  error_msg();
-        
+        fprintf(zebra, "in play_game receive message %s, %d\n", fromWhom, msg.type);
+        fflush(zebra);
         switch (msg.type){
-            //TODO: change hightlight of units
             case TIMER_READY:
-                fprintf(zebra, "receive timer %d\n", msg.timer_type);
-                fflush(zebra);
                 if (msg.timer_type == LANCER_TIMER)    reply.interval = LANCER_INTERVAL;
                 else if (msg.timer_type == HOPLITE_TIMER)   reply.interval = HOPLITE_INTERVAL;
                 else if (msg.timer_type == MINE_TIMER)   reply.interval = MINE_INTERVAL;
@@ -172,6 +172,8 @@ void play_game(void){
                 // fflush(zebra);
                 break;
             case HUMAN_MOVE:  ;  // update tail->reply.arena, and push
+                fprintf(zebra, "in play_game receive human_move %s, %d\n", fromWhom, msg.act);
+                fflush(zebra);
                 int humanId = msg.humanId;
                 // fprintf(zebra, "receive human move, id is %d\n", humanId);
                 // fflush(zebra);
@@ -278,9 +280,6 @@ void play_game(void){
                 }
                 // tail->reply.arena = arena;
                 push();
-                
-                // reply to courier2 when new key comes
-                
                 break;
             case OKAY:
                 if (head != NULL){
@@ -416,10 +415,10 @@ void error_msg(void){
 void push(void){
     if (head == NULL){
         head = (queue*)malloc(sizeof(queue));
-        tail = head;
         head->next = NULL;
         head->reply.arena = arena;
         head->reply.type = DISPLAY_ARENA;
+        tail = head;
     }
     else{
         tail->next = (queue*)malloc(sizeof(queue));

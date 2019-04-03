@@ -6,7 +6,6 @@
 #include <time.h>
 #include "message.h"
 
-//laji
 int game_admin;
 MESSAGE msg, reply;
 TIMER_TYPE timer_type;
@@ -17,8 +16,10 @@ int sleep_time;
 void error_msg(void);
 // 0: lancer, 1: hoplite, 2: mine
 
-int main(int argc, char* argv[])
-{
+// FILE* time_file;
+
+int main(int argc, char* argv[]){
+    // time_file = fopen("time_file", "w");
     char name[] = "Timer?";
     name[5] = argv[1][0];
     if (name_attach(name, NULL) == -1){
@@ -36,12 +37,12 @@ int main(int argc, char* argv[])
     if (name_detach() == -1){
         fprintf(stderr, "Cannot detach name!\n");
         exit(0);
-    }  
+    }
+    // fclose(time_file);  
     return 0;
 }
 
-void registration(void)
-{
+void registration(void){
     msg.type = REGISTER_TIMER;
     if (Send(game_admin, &msg, &reply, sizeof(msg), sizeof(reply)) == -1) error_msg();
     if (reply.type == FAIL){
@@ -51,13 +52,16 @@ void registration(void)
     timer_type = reply.timer_type;
 }
 
-void game(void)
-{
+void game(void){
     while(1){
         msg.type = TIMER_READY;
         msg.timer_type = timer_type;
         if (Send(game_admin, &msg, &reply, sizeof(msg), sizeof(reply)) == -1) error_msg();
         if (reply.type == SLEEP) {
+
+            // fprintf(time_file, "time receives sleep");
+            // fflush(time_file);
+
             sleep_time = reply.interval;
             usleep(sleep_time);
         }

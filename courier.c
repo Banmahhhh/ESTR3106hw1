@@ -15,12 +15,17 @@ void error_msg(void);
 void play_game(void);
 void display_game(void);
 int end = 0;
+FILE* cour;
 
 int main(int argc, char* argv[])
 {
+    
     char name[] = "Courier?";
     name[7] = argv[1][0];
     courid = argv[1][0] - '0';
+
+    if (courid == 0) cour = fopen("cour0", "w+");
+    else cour = fopen("cour1", "w+");
     if (name_attach(name, NULL) == -1){
         fprintf(stderr, "Cannot attach name!\n");
         exit(0);
@@ -39,6 +44,7 @@ int main(int argc, char* argv[])
     }
 
     if (name_detach() == -1) error_msg();
+    fclose(cour);
     return 0;
 }
 
@@ -80,11 +86,15 @@ void registration_display(void){
 }
 
 void play_game(void){
+    fprintf(cour, "in courier %d, starts\n", courid);
+    fflush(cour);
     msg.type = START;
     msg.humanId = reply.humanId;
     csend(in_admin);
     while(!end){
         switch (reply.type){
+            fprintf(cour, "courier %d receive message\n", courid);
+            fflush(cour);
             case HUMAN_MOVE:
                 msg.type = HUMAN_MOVE;
                 msg.humanId = reply.humanId;
@@ -108,6 +118,8 @@ void play_game(void){
 }
 
 void display_game(void){
+    // fprintf(cour, "in courier2, starts\n");
+    // fflush(cour);
     msg.type = COURIER_READY;
     csend(game_admin);
     while(!end){

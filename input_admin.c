@@ -14,6 +14,7 @@ typedef struct node{
 
 queue *head = NULL, *tail = NULL;
 char *fromWhom = NULL, *fromWhom2 = NULL;
+char *cour1 = NULL, *cour2 = NULL;
 MESSAGE msg, reply, msg2, reply2;
 int end = 0;
 int end_num = 0;
@@ -29,8 +30,7 @@ void isend(void);
 FILE* banma;
 
 int main(void){ 
-    banma = fopen("banma", "w");
-
+    banma = fopen("input_file", "w"); 
     if (name_attach("Input_Admin", NULL) == -1){
         fprintf(stderr, "Attach name failed!\n");
         exit(0);
@@ -46,9 +46,9 @@ int main(void){
 
 void play_game(void){
     while(!end){
-        if (Receive(&fromWhom, &msg, sizeof(msg)) == -1) error_msg();
-        fprintf(banma, "receive message %d\n", msg.type);
-        fflush(banma);  
+        if (Receive(&fromWhom, &msg, sizeof(msg)) == -1) error_msg(); 
+        fprintf(banma, "input_admin receives message %d\n", msg.type);
+        fflush(banma);
         switch (msg.type){
             case REGISTER_COURIER:
                 if (courier_num == 2){
@@ -73,25 +73,24 @@ void play_game(void){
             case FAIL:
                 break;
             case START:
-                fprintf(banma, "receive start\n");
-                fflush(banma);
                 reply.type = HUMAN_MOVE;
                 reply.act = NOACTION;
                 // reply.humanId = 0;
                 isend(); 
                 break;
             case UPDATE:
-                fprintf(banma, "receive update\n");
-                fflush(banma);
                 reply.type = HUMAN_MOVE;                 
                 pop();  
+                // fprintf(banma, "fromwhom %s\n", fromWhom);
+                // fflush(banma);
                 isend(); 
                 break;
             case END:
                 reply.type = OKAY;
-                end_num++;
+                // end_num++;
                 isend();
-                if (end_num == 2)   end = 1;
+                // if (end_num == 2)   
+                end = 1;
                 break;
             case REGISTER_KEYBOARD: //register tmp_keyboard after couriers
                 if (tmp_keyboard_num){
@@ -130,13 +129,8 @@ void pop(){
                 exit(0);
         }        
     }    
-
-    fprintf(banma, "head is not null now\n");
-    fflush(banma);
     reply.humanId = head->humanId;  
     reply.act = head->act;
-    fprintf(banma, "head act %d\n", head->act);
-    fflush(banma);
     queue* tmp = head;
     head = head->next;
     free(tmp);
@@ -181,8 +175,6 @@ void push(int tmp_key){
         tail = tail->next;
         tail->next = NULL;
     }
-    // fprintf(banma, "after push, tail->act is %d\n", tail->act);
-    // fflush(banma); 
 }
 
 void isend(void){

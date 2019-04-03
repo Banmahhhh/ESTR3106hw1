@@ -6,8 +6,7 @@
 #include <unistd.h>
 #include "simpl.h"
 #include "message.h"
-    
-    
+
 int admin;
 int end = 0;
 MESSAGE msg, reply; 
