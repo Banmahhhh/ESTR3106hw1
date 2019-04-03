@@ -1,5 +1,5 @@
 # ESTR3106hw1
-##How to run
+## How to run
 ./flush
 make
 ./run.sh
