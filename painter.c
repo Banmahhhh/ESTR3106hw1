@@ -12,6 +12,7 @@ int end = 0;
 int start_x, start_y;
 int height, width;
 WINDOW *win;
+ARENA arena;
 
 void init(void);
 void error_msg(void);
@@ -53,6 +54,7 @@ void init(void){
     init_pair(1, COLOR_GREEN, COLOR_BLACK); // title
     init_pair(2, COLOR_RED, COLOR_YELLOW);  // left
     init_pair(3, COLOR_BLUE, COLOR_YELLOW); // right
+    init_pair(4, COLOR_YELLOW, COLOR_YELLOW);
 
     height = MAX_HEIGHT;    width = MAX_WIDTH;
     start_x = (COLS - width)/2;     start_y = (LINES - height)/2;
@@ -68,6 +70,7 @@ void play_game(void){
         // msg.type = PAINTER_READY;
         // ptsend();
         if (reply.type == PAINT){
+            // arena = reply.
             paint();
             msg.type = PAINTER_READY;
             ptsend();
@@ -134,6 +137,7 @@ void paint(void){
     }
     
     // markers
+    //TODO:
     wattron(win,A_REVERSE|COLOR_PAIR(2));
 	mvwprintw(win,reply.arena.players[0].pos.y,reply.arena.players[0].pos.x," ");
 	wattroff(win,A_REVERSE|COLOR_PAIR(2));
@@ -145,15 +149,11 @@ void paint(void){
 
     // bottom
     mvwprintw(win,19,99," ");
-	// red
-	attron(COLOR_PAIR(2));
-	mvprintw(start_y-1+22, start_x+1, "Red $: %d/%d, health: %d, unit_no: %d/%d",reply.arena.players[0].resource,MAX_RESOURCE,reply.arena.players[0].health,reply.arena.players[0].unit_no,MAX_UNIT);
-	attroff(COLOR_PAIR(2));
 
-	// blue
-	attron(COLOR_PAIR(3));
-	mvprintw(start_y-1+22, start_x+52, "Blue $: %d/%d, health: %d, unit_no: %d/%d",reply.arena.players[1].resource,MAX_RESOURCE,reply.arena.players[1].health,reply.arena.players[1].unit_no,MAX_UNIT);
-	attroff(COLOR_PAIR(3));
+    mvprintw(start_y+21, start_x+1, "Red $: %d/100000, health: %4d, unit_no: %d/100", reply.arena.players[0].resource, reply.arena.players[0].health, reply.arena.players[0].unit_no);
+    mvchgat(start_y+21, start_x+1, width / 2 + 1, A_NORMAL, 2, NULL);
+    mvprintw(start_y+21, start_x+52, "Blue $: %d/100000, health: %4d, unit_no: %d/100", reply.arena.players[1].resource, reply.arena.players[1].health, reply.arena.players[1].unit_no);
+    mvchgat(start_y+21, start_x+52, width / 2 + 1, A_NORMAL, 3, NULL);
 
 	refresh();
 	wrefresh(win);
@@ -167,9 +167,9 @@ void paint_red(int y, int x, char* symbol, int highlight){
         wattroff(win,COLOR_PAIR(2));
     }
     else{
-        wattron(win, COLOR_PAIR(2) | A_BLINK);
+        wattron(win, COLOR_PAIR(2) | A_BOLD);
         mvwprintw(win, y, x, symbol);
-        wattroff(win,COLOR_PAIR(2) | A_BLINK);
+        wattroff(win,COLOR_PAIR(2) | A_BOLD);
     }
 }
 
@@ -180,27 +180,27 @@ void paint_blue(int y, int x, char* symbol, int highlight){
         wattroff(win,COLOR_PAIR(3));
     }
     else{
-        wattron(win, COLOR_PAIR(3) | A_BLINK);
+        wattron(win, COLOR_PAIR(3) | A_BOLD);
         mvwprintw(win, y, x, symbol);
-        wattroff(win,COLOR_PAIR(3) | A_BLINK);
+        wattroff(win,COLOR_PAIR(3) | A_BOLD);
     }
 }
 
 void create_win(){
-    attron(COLOR_PAIR(2));
     win = newwin(height, width, start_y, start_x);
     wborder(win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
     refresh();
-    // attroff(COLOR_PAIR(2)));
 
+    attron(COLOR_PAIR(4));
     int i, j;
     for(j = start_y - 3; j <= start_y + height + 3; j++)
 		for(i = start_x - 3; i <= start_x + width + 3; i++)
 			mvaddch(j, i, ' ');
     refresh();
-    // attroff(COLOR_PAIR(2));
+    attroff(COLOR_PAIR(4));
 
     // left
+    attron(COLOR_PAIR(2));
     mvaddch(start_x-1, start_x-1, '+');
     mvaddch(start_y + height, start_x-1, '+');
 	mvhline(start_y-1, start_x, '-', width/2);
