@@ -322,6 +322,7 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
                         arena.units[banma[i][j+1]].active = 0;
                         arena.players[1].unit_no--;
                         banma[i][j+1] = -1;
+                        arena.units[banma[i][j-1]].highlight = 0;
                     }
                 }
                 else if (banma[i][j+1] == 201 && arena.units[banma[i][j+2]].force == BLUE){ // blue mine
@@ -332,6 +333,7 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
                         arena.players[1].unit_no--;
                         banma[i][j+2] = -1; banma[i][j+1] = -1; banma[i][j+3] = -1;
                         mine_num[1]--;
+                        arena.units[banma[i][j-1]].highlight = 0;
                     }
                 }
                 else if ((banma[i][j+1] == 202 || banma[i][j+1] == 203) && arena.units[banma[i][j+2]].force == BLUE){ // blue lancer or hoplite
@@ -341,6 +343,7 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
                         arena.units[banma[i][j+2]].active = 0;
                         arena.players[1].unit_no--;
                         banma[i][j+2] = -1; banma[i][j+1] = -1;
+                        arena.units[banma[i][j-1]].highlight = 0;
                     }
                 }
             }
@@ -366,6 +369,7 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
                         arena.units[banma[i][j-1]].active = 0;
                         arena.players[0].unit_no--;
                         banma[i][j-1] = -1;
+                        arena.units[banma[i][j+1]].highlight = 0;
                     }
                 }
                 else if (banma[i][j-1] == 201 && arena.units[banma[i][j-2]].force == RED){ // red mine
@@ -376,6 +380,7 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
                         arena.players[0].unit_no--;
                         banma[i][j-2] = -1; banma[i][j-1] = -1; banma[i][j-3] = -1;
                         mine_num[0]--;
+                        arena.units[banma[i][j+1]].highlight = 0;
                     }
                 }
                 else if ((banma[i][j-1] == 202 || banma[i][j-1] == 203) && arena.units[banma[i][j-2]].force == RED){ // red lancer or hoplite
@@ -385,6 +390,7 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
                         arena.units[banma[i][j-2]].active = 0;
                         arena.players[0].unit_no--;
                         banma[i][j-2] = -1; banma[i][j-1] = -1;
+                        arena.units[banma[i][j+1]].highlight = 0;
                     }
                 }
             }
