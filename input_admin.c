@@ -1,3 +1,11 @@
+/* -------------------------
+* ESTR 3106 - Assignment 1
+* Name : LI Yunxiang
+* Student ID : 1155092144
+* Email : yxli7@link.cuhk.edu.hk
+**
+Failure/Success
+* -----------------------*/
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,27 +36,31 @@ void push(int);
 void pop(void);
 void isend(void);
 void check_and_reply(void);
-FILE* banma;
+// FILE* banma;
 
 int main(void){ 
     couriers[0] = NULL;
     couriers[1] = NULL;
-    banma = fopen("input_file", "w"); 
+    // banma = fopen("input_file", "w"); 
     if (name_attach("Input_Admin", NULL) == -1){
         fprintf(stderr, "Attach name failed!\n");
         exit(0);
     }
     play_game();
+
+    // fprintf(banma, "input_admin ends\n");
+    // fflush(banma);
     if (name_detach() == -1){
         fprintf(stderr, "Detach name failed\n");
         exit(0);
     }
-    fclose(banma);
+    // fclose(banma);
+    exit(0);
     return 0;
 }
 
 void play_game(void){
-    while(!end){
+    while(end!=3){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1) error_msg(); 
         // fprintf(banma, "input_admin receives message %d\n", msg.type);
         // fflush(banma);
@@ -83,17 +95,15 @@ void play_game(void){
                 isend(); 
                 break;
             case UPDATE:
-                // fprintf(banma, "receives update from %s %d\n", fromWhom, msg.humanId);
-                // fflush(banma);
                 couriers[msg.humanId] = fromWhom; 
                 check_and_reply();   
                 break;
             case END:
                 reply.type = OKAY;
-                // end_num++;
-                isend();
-                // if (end_num == 2)   
-                end = 1;
+                isend(); 
+                // fprintf(banma, "input_admin receives an end %d\n", end);
+                // fflush(banma);
+                end++;
                 break;
             case REGISTER_KEYBOARD: //register tmp_keyboard after couriers
                 if (tmp_keyboard_num){
@@ -107,6 +117,12 @@ void play_game(void){
                 }
                 break;
             case KEYBOARD_READY: 
+                if (end != 0){
+                    reply.type = END;
+                    isend();
+                    end++;
+                    break;
+                }
                 reply.type = START;
                 isend();
                 break;
@@ -120,18 +136,7 @@ void play_game(void){
     }
 }
 
-// check if the action valid. if yes, return, if no, wait for message from keyboard
-void pop(){     // update reply and pop
-    // while (head == NULL){
-    //     if(Receive(&fromWhom2, &msg2, sizeof(msg2)) == -1) error_msg();        
-    //     if (msg2.type == KEYBOARD_INPUT){                                           
-    //         push(msg2.key);
-    //         reply2.type = OKAY;
-    //         if (Reply(fromWhom2, &reply2, sizeof(MESSAGE)) == -1)
-    //             exit(0);
-    //     }        
-    // }    
-    // if (head == NULL)   return;
+void pop(){ 
     queue* tmp = head; head = head->next; free(tmp);  
 }
 
@@ -208,6 +213,6 @@ void isend(void){
 }
 
 void error_msg(void){
-    fprintf(stderr, "%s\n", whatsMyError());
+    fprintf(stderr, "input %s\n", whatsMyError());
     exit(0);
 }

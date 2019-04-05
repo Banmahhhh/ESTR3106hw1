@@ -1,3 +1,11 @@
+/* -------------------------
+* ESTR 3106 - Assignment 1
+* Name : LI Yunxiang
+* Student ID : 1155092144
+* Email : yxli7@link.cuhk.edu.hk
+**
+Failure/Success
+* -----------------------*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +92,6 @@ void ksend(void){
 }
 
 void error_msg(void){
-    fprintf(stderr, "%s\n", whatsMyError());
+    fprintf(stderr, "keyboard %s\n", whatsMyError());
     exit(0);
 }

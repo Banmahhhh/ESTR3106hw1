@@ -1,3 +1,11 @@
+/* -------------------------
+* ESTR 3106 - Assignment 1
+* Name : LI Yunxiang
+* Student ID : 1155092144
+* Email : yxli7@link.cuhk.edu.hk
+**
+Failure/Success
+* -----------------------*/
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +23,7 @@ void error_msg(void);
 void play_game(void);
 void display_game(void);
 int end = 0;
-FILE* cour;
+// FILE* cour;
 
 int main(int argc, char* argv[])
 {
@@ -24,8 +32,9 @@ int main(int argc, char* argv[])
     name[7] = argv[1][0];
     courid = argv[1][0] - '0';
 
-    if (courid == 0) cour = fopen("cour0", "w+");
-    else cour = fopen("cour1", "w+");
+    // if (courid == 0) cour = fopen("cour0", "w+");
+    // else if (courid == 1) cour = fopen("cour1", "w+");
+    // else cour = fopen("cour2", "w+");
 
 
     if (name_attach(name, NULL) == -1){
@@ -39,14 +48,19 @@ int main(int argc, char* argv[])
     if (courid  == 0 || courid == 1){
         registration_human();
         play_game();
+        // fprintf(cour, "courier %d di\n", courid);
+        // fflush(cour);
     }
     else{
         registration_display();
         display_game();
+        // fprintf(cour, "display game end\n");
+        // fflush(cour);
     }
 
     if (name_detach() == -1) error_msg();
-    fclose(cour);
+    // fclose(cour);
+    exit(0);
     return 0;
 }
 
@@ -88,14 +102,12 @@ void registration_display(void){
 }
 
 void play_game(void){
-    fprintf(cour, "in courier %d, starts\n", courid);
-    fflush(cour);
+    // fprintf(cour, "in courier %d, starts\n", courid);
+    // fflush(cour);
     msg.type = START;
     msg.humanId = reply.humanId;
     csend(in_admin);
     while(!end){
-        fprintf(cour, "courier %d receive message %d\n", courid, reply.type);
-        fflush(cour);
         switch (reply.type){
             case HUMAN_MOVE:
                 msg.type = HUMAN_MOVE;
@@ -104,10 +116,12 @@ void play_game(void){
                 csend(game_admin);
                 break;
             case OKAY:
+                // fprintf(cour, "courier %d receive end\n", courid);
+                // fflush(cour);
                 end = 1;
                 break;
             case END:
-                reply.type = END;
+                msg.type = END;
                 csend(in_admin);
                 break;
             case UPDATE:
@@ -132,7 +146,7 @@ void display_game(void){
                 msg.arena = reply.arena;
                 csend(dis_admin);
                 break;
-            case OKAY:
+            case OKAY:   
                 msg.type = OKAY;
                 csend(game_admin);
                 break;
@@ -141,6 +155,8 @@ void display_game(void){
                 msg.humanId = reply.humanId;    // winner
                 msg.arena = reply.arena;
                 csend(dis_admin);
+                // fprintf(cour, "courier %d receive end\n", courid);
+                // fflush(cour);
                 end = 1;
                 break;
             default: break;
@@ -149,7 +165,7 @@ void display_game(void){
 }
 
 void error_msg(){
-    fprintf(stderr, "%s\n", whatsMyError());
+    fprintf(stderr, "cour %d %s\n", courid, whatsMyError());
     exit(0);
 }
 

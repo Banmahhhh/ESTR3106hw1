@@ -1,3 +1,12 @@
+/* -------------------------
+* ESTR 3106 - Assignment 1
+* Name : LI Yunxiang
+* Student ID : 1155092144
+* Email : yxli7@link.cuhk.edu.hk
+**
+Failure/Success
+* -----------------------*/
+
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,7 +28,7 @@ int timer_num = 0, courier_num = 0, human_num = 0;
 int end = 0;
 ARENA arena;
 char *fromWhom = NULL, *courier = NULL;
-FILE *zebra;
+// FILE *zebra;
 
 // '/O\': 201 index 201;    {: index;      }: index;    
 // &/: index 202;   \&: 202 index;      @]: index 203;   [@: 203 index
@@ -43,15 +52,15 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type); 
 void create_unit(int index, int x, int y, FORCE humanId, UNIT_TYPE type, int health, int reduce_resource);
 
 int main(void){
-    zebra = fopen("zebra", "w");
+    // zebra = fopen("zebra", "w");
     if ((name_attach("Game_Admin", NULL)) == -1){
         fprintf(stderr, "Attach name failed!\n");
         exit(0);
     }
     init();  
     registration();
-    fprintf(zebra, "registration finish\n");
-    fflush(zebra);
+    // fprintf(zebra, "registration finish\n");
+    // fflush(zebra);
     srand((unsigned int)(time(NULL)));
     play_game();
     game_end();
@@ -59,7 +68,7 @@ int main(void){
         fprintf(stderr, "Detach name failed\n");
         exit(0);
     }
-    fclose(zebra);
+    // fclose(zebra);
     return 0;
 }
 
@@ -68,8 +77,8 @@ void registration(void){
 
     while(timer_num != 3 || courier_num != 1 || human_num != 2){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)    error_msg();
-        fprintf(zebra, "registration receive message, receive message %s, %d\n", fromWhom, msg.type);
-        fflush(zebra);
+        // fprintf(zebra, "registration receive message, receive message %s, %d\n", fromWhom, msg.type);
+        // fflush(zebra);
         ;
         switch (msg.type){
             case REGISTER_TIMER:
@@ -100,8 +109,8 @@ void registration(void){
                 else{
                     reply.type = INIT;
                     reply.humanId = fromWhom[7]-'0'; //human_tmp++;
-                    fprintf(zebra, "human id is %d\n", reply.humanId);
-                    fflush(zebra);
+                    // fprintf(zebra, "human id is %d\n", reply.humanId);
+                    // fflush(zebra);
                     g_send();
                 }
                 break;
@@ -144,8 +153,8 @@ void play_game(void){
     push();  
     while(arena.players[0].health > 0 && arena.players[1].health > 0){
         if (Receive(&fromWhom, &msg, sizeof(MESSAGE)) == -1)  error_msg();
-        fprintf(zebra, "in play_game receive message %s, %d\n", fromWhom, msg.type);
-        fflush(zebra);
+        // fprintf(zebra, "in play_game receive message %s, %d\n", fromWhom, msg.type);
+        // fflush(zebra);
         switch (msg.type){
             case TIMER_READY:
                 if (msg.timer_type == LANCER_TIMER)    reply.interval = LANCER_INTERVAL;
@@ -174,8 +183,8 @@ void play_game(void){
                 // fflush(zebra);
                 break;
             case HUMAN_MOVE:  ;  // update tail->reply.arena, and push
-                fprintf(zebra, "in play_game receive human_move %s, %d\n", fromWhom, msg.act);
-                fflush(zebra);
+                // fprintf(zebra, "in play_game receive human_move %s, %d\n", fromWhom, msg.act);
+                // fflush(zebra);
                 int humanId = msg.humanId;
                 // fprintf(zebra, "receive human move, id is %d\n", humanId);
                 // fflush(zebra);
@@ -400,15 +409,43 @@ void move_l_h(int melee_damage, int base_damage, int type_num, UNIT_TYPE type){
 
 void game_end(void){
     int i;
-    reply.type = END;
-    reply.arena = arena;
-    if (arena.players[0].health > arena.players[1].health)  reply.humanId = 0;
-    else    reply.humanId = 1;
-    
+    int humanId = 0;
+    // reply.type = END;
+    // reply.arena = arena;
+    if (arena.players[0].health > arena.players[1].health)  humanId = 0;
+    else humanId = 1;
+
     for (i=0; i<6; i++){
-        if (Receive(&fromWhom, &msg, sizeof(msg)))  error_msg();       
-        g_send();
+        if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)  error_msg();  
+        // fprintf(zebra, "in game end, receive message %d\n", msg.type);
+        // fflush(zebra);
+        switch (msg.type){
+            case TIMER_READY:  
+                reply.type = END;
+                g_send();
+                // fprintf(zebra, "in game end, timer\n");
+                // fflush(zebra);
+                break;
+            case OKAY:
+                reply.type = END;
+                reply.arena = arena;
+                reply.humanId = humanId;
+                g_send();
+                // fprintf(zebra, "in game end, display\n");
+                // fflush(zebra);
+                break;
+            case HUMAN_MOVE:
+                reply.type = END;
+                reply.humanId = humanId;
+                g_send();
+                // fprintf(zebra, "in game end, human\n");
+                // fflush(zebra);
+                break;
+            default: break;
+        }
     }
+    // fprintf(zebra, "game end!");
+    // fflush(zebra);
 }
 
 void g_send(void){
@@ -417,7 +454,7 @@ void g_send(void){
 }
 
 void error_msg(void){
-    fprintf(stderr, "%s\n", whatsMyError());
+    fprintf(stderr, "game %s\n", whatsMyError());
     exit(0);
 }
 
@@ -461,14 +498,14 @@ void init(void){
     arena.players[0].pos.y = 9;
     arena.players[0].force = RED;
     arena.players[0].health = 1000;
-    arena.players[0].resource = 200;
+    arena.players[0].resource = 500;
     arena.players[0].unit_no = 0;
 
     arena.players[1].pos.x = 75;
     arena.players[1].pos.y = 9;
     arena.players[1].force = BLUE;
     arena.players[1].health = 1000;
-    arena.players[1].resource = 200;
+    arena.players[1].resource = 500;
     arena.players[1].unit_no = 0;
 
     int i;

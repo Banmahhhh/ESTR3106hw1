@@ -1,3 +1,11 @@
+/* -------------------------
+* ESTR 3106 - Assignment 1
+* Name : LI Yunxiang
+* Student ID : 1155092144
+* Email : yxli7@link.cuhk.edu.hk
+**
+Failure/Success
+* -----------------------*/
 #include <sys/types.h>
 #include <stdlib.h>
 #include <simpl.h>
@@ -13,6 +21,7 @@ int start_x, start_y;
 int height, width;
 WINDOW *win;
 ARENA arena;
+// FILE* banma;
 
 void init(void);
 void error_msg(void);
@@ -26,6 +35,7 @@ void paint_red(int y, int x, char* symbol, int highlight);
 void paint_blue(int y, int x, char* symbol, int highlight);
 
 int main(void){
+    // banma = fopen("painter_file", "w");
     if (name_attach("Painter", NULL) == -1){
         fprintf(stderr, "Name attach failed!\n");
         exit(0);
@@ -36,10 +46,13 @@ int main(void){
     init();
     play_game();
     
+    // fprintf(banma, "painter end\n");
+    // fflush(banma);
     if(name_detach() == -1){
         fprintf(stderr, "Name detach Failed!\n");
         exit(0);
     }
+    // fclose(banma);
     return 0;
 }
 
@@ -76,13 +89,23 @@ void play_game(void){
             ptsend();
         }
         else{
-            //TODO: change
+            
             end = 1;
             int winner = reply.humanId;
-            if (winner == 0)    mvprintw(0, 0, "red win!");
-            else    mvprintw(0, 0, "blue win!");
+            if (winner == 0) {
+                wattron(win,A_REVERSE|COLOR_PAIR(1));
+                mvwprintw(win,18,width/2-8,"red win!");
+                wattroff(win,A_REVERSE|COLOR_PAIR(1));
+            }
+            else{
+                wattron(win,A_REVERSE|COLOR_PAIR(1));
+                mvwprintw(win,18,width/2-8,"blue win!");
+                wattroff(win,A_REVERSE|COLOR_PAIR(1));
+            }
             refresh();
-            exit(0);
+            wrefresh(win);
+            sleep(2);
+            // exit(0);
         }
     }
     endwin();
@@ -137,7 +160,6 @@ void paint(void){
     }
     
     // markers
-    //TODO:
     wattron(win,A_REVERSE|COLOR_PAIR(2));
 	mvwprintw(win,reply.arena.players[0].pos.y,reply.arena.players[0].pos.x," ");
 	wattroff(win,A_REVERSE|COLOR_PAIR(2));
@@ -201,7 +223,7 @@ void create_win(){
 
     // left
     attron(COLOR_PAIR(2));
-    mvaddch(start_x-1, start_x-1, '+');
+    mvaddch(start_y-1, start_x-1, '+');
     mvaddch(start_y + height, start_x-1, '+');
 	mvhline(start_y-1, start_x, '-', width/2);
 	mvhline(start_y + height, start_x, '-', width/2);
@@ -237,6 +259,6 @@ void ptsend(void){
 }
 
 void error_msg(void){
-    fprintf(stderr, "%s\n", whatsMyError());
+    fprintf(stderr, "painter, %s\n", whatsMyError());
     exit(0);
 }

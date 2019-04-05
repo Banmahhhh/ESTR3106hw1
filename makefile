@@ -1,3 +1,11 @@
+# /* -------------------------
+# * ESTR 3106 - Assignment 1
+# * Name : LI Yunxiang
+# * Student ID : 1155092144
+# * Email : yxli7@link.cuhk.edu.hk
+# **
+# Failure/Success
+# * -----------------------*/
 CC=gcc
 OS=_THISIS_LINUX
 VER=_SIMPLIPC
@@ -34,7 +42,7 @@ keyboard.o: message.h keyboard.c
 keyboard: keyboard.o
 	${CC} keyboard.o -o keyboard ${LDFLAGS}	${LIBS}
 
-TODO:
+
 painter.o: message.h painter.c
 	${CC} ${CDFLAGS} painter.c -o painter.o 
 

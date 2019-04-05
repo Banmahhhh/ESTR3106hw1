@@ -1,3 +1,11 @@
+/* -------------------------
+* ESTR 3106 - Assignment 1
+* Name : LI Yunxiang
+* Student ID : 1155092144
+* Email : yxli7@link.cuhk.edu.hk
+**
+Failure/Success
+* -----------------------*/
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,7 +23,7 @@ queue *head, *tail;
 char *fromWhom = NULL, *fromWhom2 = NULL;
 MESSAGE msg, reply, msg2, reply2;
 int winner;
-int end = 0;
+int end = 0, end_tmp = 0;
 char *painter = NULL;
 
 void display_game(void);
@@ -23,11 +31,11 @@ void psend(void);
 void push_msg(ARENA);
 void pop_msg(void);
 void error_msg(void);
-FILE* display_file;
+// FILE* display_file;
 
 int main(void)
 {
-    display_file = fopen("display_file", "w");
+    // display_file = fopen("display_file", "w");
     char name[] = "Display_Admin";
     if (name_attach(name, NULL) == -1){
         fprintf(stderr, "Cannot attach name!\n");
@@ -35,11 +43,14 @@ int main(void)
     }
     display_game();
 
+    // fprintf(display_file, "display ends\n");
+    // fflush(display_file);
+
     if (name_detach() == -1){
         fprintf(stderr, "Cannot, detach name!\n");
         exit(0);
     }
-    fclose(display_file);
+    // fclose(display_file);
     return 0;
 }
 
@@ -48,8 +59,8 @@ void display_game(void){
         if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)    error_msg();
         switch (msg.type){
             case DISPLAY_ARENA:
-                fprintf(display_file, "receive display_arena\n");
-                fflush(display_file);
+                // fprintf(display_file, "receive display_arena\n");
+                // fflush(display_file);
                 reply.type = OKAY;
                 psend();
                 push_msg(msg.arena);
@@ -60,12 +71,16 @@ void display_game(void){
                 break;
             case END:
                 end = 1;
-                winner = msg.humanId; //TODO
-                push_msg(msg.arena);
                 reply.type = OKAY;
                 psend();
+
                 if (Receive(&fromWhom, &msg, sizeof(msg)) == -1)    error_msg();
-                // receive okay from painter, end
+                // fprintf(display_file, "game end, receive message\n");
+                // fflush(display_file);
+                reply.type = END;
+                reply.arena = msg.arena;
+                reply.humanId = msg.humanId; 
+                psend();
                 break;
             default: break;
         }
@@ -74,7 +89,7 @@ void display_game(void){
 
 void psend(){
     if (Reply(fromWhom, &reply, sizeof(MESSAGE)) == -1){
-        fprintf(stderr, "%s\n", whatsMyError());
+        fprintf(stderr, "display %s\n", whatsMyError());
         exit(0);
     }
 }
